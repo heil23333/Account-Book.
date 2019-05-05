@@ -4,17 +4,44 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.example.civet.myapp.bean.Consumption;
+import com.example.civet.myapp.db.DBManager;
+
+import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    RecyclerView consumptionList;
+    TextView emptyView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initView();
+        checkList();
+    }
+
+    private void checkList() {
+        if (DBManager.getConsumptionSize(MainActivity.this) == 0) {
+            consumptionList.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void initView() {
+        consumptionList = findViewById(R.id.consumption_list);
+        emptyView = findViewById(R.id.empty_text);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -22,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                DBManager.insertConsumption(new Consumption("早餐", 2.5f, new Date().getTime(), "吃喝"), MainActivity.this);
             }
         });
     }

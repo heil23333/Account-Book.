@@ -18,13 +18,13 @@ public class SQLiteDbHelper extends SQLiteOpenHelper {
          */
         db.execSQL("CREATE TABLE `classifications` ( " +
                 "`id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                "`name` TEXT NOT NULL, " +
+                "`name` TEXT NOT NULL UNIQUE, " +
                 "`times` INTEGER DEFAULT 0, " +
                 "`priority` INTEGER DEFAULT 0 " +
                 ")");
         db.execSQL("CREATE TABLE `tags` ( " +
                     "`id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                    "`name` TEXT NOT NULL, " +
+                    "`name` TEXT NOT NULL UNIQUE, " +
                     "`classification` TEXT NOT NULL, " +
                     "`times` INTEGER DEFAULT 0, " +
                     "`priority` INTEGER DEFAULT 0, " +
@@ -48,10 +48,22 @@ public class SQLiteDbHelper extends SQLiteOpenHelper {
         /**
          * 给标签表写入初始值
          */
+        db.execSQL("INSERT INTO tags('name', 'classification', 'times','priority') VALUES('早餐', '吃喝', 0, 0)");
+        db.execSQL("INSERT INTO tags('name', 'classification', 'times','priority') VALUES('午餐', '吃喝', 0, 0)");
+        db.execSQL("INSERT INTO tags('name', 'classification', 'times','priority') VALUES('晚餐', '吃喝', 0, 0)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (db.isReadOnly()) {
+            // 启动外键
+            db.execSQL("PRAGMA foreign_keys = 1;");
+        }
     }
 }
