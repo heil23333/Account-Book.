@@ -6,6 +6,9 @@ public class Consumption {
     private long time;
     private String classification;
 
+    public Consumption() {
+    }
+
     public Consumption(String tag, float money, long time, String classification) {
         this.tag = tag;
         this.money = money;

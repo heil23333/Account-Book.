@@ -1,5 +1,6 @@
 package com.example.civet.myapp;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.civet.myapp.bean.Consumption;
 import com.example.civet.myapp.db.DBManager;
@@ -21,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     RecyclerView consumptionList;
     TextView emptyView;
-
+    DBManager dbManager;
+    List<Consumption> consumptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,14 +36,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkList() {
-        if (DBManager.getConsumptionSize(MainActivity.this) == 0) {
+        if (dbManager.getConsumptionSize(MainActivity.this) == 0) {
             consumptionList.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
+        } else {
+            consumptionList.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+            consumptions = dbManager.getConsumptionList();
         }
     }
 
     private void initView() {
+        dbManager = new DBManager(MainActivity.this);
         consumptionList = findViewById(R.id.consumption_list);
+
+        consumptions = dbManager.getConsumptionList();
+
         emptyView = findViewById(R.id.empty_text);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DBManager.insertConsumption(new Consumption("早餐", 2.5f, new Date().getTime(), "吃喝"), MainActivity.this);
+                if (dbManager.insertConsumption(new Consumption("早餐", 2.5f, new Date().getTime(), "吃喝"))) {
+                    Toast.makeText(MainActivity.this, "插入成功", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

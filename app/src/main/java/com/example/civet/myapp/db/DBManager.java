@@ -5,44 +5,88 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.civet.myapp.Util.L;
 import com.example.civet.myapp.bean.Consumption;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
-    private static SQLiteDatabase database;
+    private SQLiteDatabase database;
 
-    public static SQLiteDatabase getDB(Context context) {
-        if (database == null) {
-            database = new SQLiteDbHelper(context).getWritableDatabase();
-        }
-        return database;
+    private Context context;
+
+    public DBManager(Context context) {
+        this.context = context;
     }
 
-    public static boolean insertConsumption(Consumption consumption, Context context) {
-        SQLiteDatabase db = getDB(context);
+    public  List<Consumption> getConsumptionList() {
+        return queryForList(new DBManager.RowMapper<Consumption>() {
+            @Override
+            public Consumption mapRow(Cursor cursor, int index) {
+                Consumption consumption = new Consumption();
+                consumption.setTag(cursor.getString(cursor.getColumnIndex("tag")));
+                consumption.setTime(cursor.getLong(cursor.getColumnIndex("time")));
+                consumption.setClassification(cursor.getString(cursor.getColumnIndex("classification")));
+                consumption.setMoney(cursor.getFloat(cursor.getColumnIndex("money")));
+                return consumption;
+            }
+        }, "SELECT * FROM consumptions;", null);
+    }
+
+    public boolean insertConsumption(Consumption consumption) {
         ContentValues values = new ContentValues();
         values.put("time", consumption.getTime());
         values.put("money", consumption.getMoney());
         values.put("tag", consumption.getTag());
         values.put("classification", consumption.getClassification());
-        if (db == null) {
+        if (database == null) {
             return false;
         } else {
-            return db.insert("consumptions", null, values) != -1;
+            return database.insert("consumptions", null, values) != -1;
         }
     }
 
-    public static int getConsumptionSize(Context context) {
-        SQLiteDatabase db = getDB(context);
+    public int getConsumptionSize(Context context) {
         int size = 0;
         Cursor cursor;
-        cursor = db.rawQuery("SELECT count(*) as count FROM consumptions", null);
+        cursor = database.rawQuery("SELECT count(*) as count FROM consumptions", null);
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 size = cursor.getInt(cursor.getColumnIndex("count"));
             }
+            cursor.close();
         }
         return size;
+    }
+
+    public interface RowMapper<T> {
+        /**
+         * @param cursor 游标
+         * @param index  下标索引
+         * @return
+         */
+        T mapRow(Cursor cursor, int index);
+    }
+
+    public <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, String[] selectionArgs) {
+        Cursor cursor = null;
+        List<T> list = new ArrayList<T>();
+        try {
+            cursor = database.rawQuery(sql, selectionArgs);
+            while (cursor.moveToNext()) {
+                list.add(rowMapper.mapRow(cursor, cursor.getPosition()));
+            }
+        } catch (Exception e) {
+            L.e("SQL", e.getMessage());
+        } finally {
+            if (database != null) {
+                database.close();
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return list;
     }
 }
