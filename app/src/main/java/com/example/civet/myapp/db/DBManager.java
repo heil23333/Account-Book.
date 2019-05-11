@@ -12,12 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
+
     private SQLiteDatabase database;
 
-    private Context context;
-
     public DBManager(Context context) {
-        this.context = context;
+        database = (new SQLiteDbHelper(context)).getWritableDatabase();
+    }
+
+    public SQLiteDatabase getDatabase() {
+        return database;
     }
 
     public  List<Consumption> getConsumptionList() {
@@ -47,7 +50,10 @@ public class DBManager {
         }
     }
 
-    public int getConsumptionSize(Context context) {
+    /**
+     * @return consumption数量
+     */
+    public int getConsumptionSize() {
         int size = 0;
         Cursor cursor;
         cursor = database.rawQuery("SELECT count(*) as count FROM consumptions", null);
@@ -69,7 +75,7 @@ public class DBManager {
         T mapRow(Cursor cursor, int index);
     }
 
-    public <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, String[] selectionArgs) {
+    private <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, String[] selectionArgs) {
         Cursor cursor = null;
         List<T> list = new ArrayList<T>();
         try {
@@ -80,9 +86,6 @@ public class DBManager {
         } catch (Exception e) {
             L.e("SQL", e.getMessage());
         } finally {
-            if (database != null) {
-                database.close();
-            }
             if (cursor != null) {
                 cursor.close();
             }
