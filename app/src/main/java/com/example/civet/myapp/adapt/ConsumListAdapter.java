@@ -34,8 +34,8 @@ public class ConsumListAdapter extends RecyclerView.Adapter<ConsumListAdapter.Co
     public void onBindViewHolder(@NonNull ConsumptionViewHolder consumptionViewHolder, int i) {
         consumptionViewHolder.classification.setText(consumptionList.get(i).getClassification());
         consumptionViewHolder.tag.setText(consumptionList.get(i).getTag());
-        consumptionViewHolder.money.setText(Float.toString(consumptionList.get(i).getMoney()));
-        consumptionViewHolder.time.setText(Long.toString(consumptionList.get(i).getTime()));
+        consumptionViewHolder.money.setText(String.valueOf(consumptionList.get(i).getMoney()));
+        consumptionViewHolder.time.setText(String.valueOf(consumptionList.get(i).getTime()));
     }
 
     @Override
